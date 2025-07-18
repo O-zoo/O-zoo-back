@@ -12,7 +12,7 @@ const host = '0.0.0.0'
 
 app.use(
   session({
-    secret: "seungjoo",
+    secret: "FRFKRQR9IVahOAfY88oWjNdOUdT8TrvN",
     resave: false,
     saveUninitialized: true,
     cookie: { secure: false },
@@ -23,7 +23,7 @@ const cors = require('cors')
 app.use(cors())
 
 const client_id = "5089e08676bae2c4b65964f001a0fb20"
-const client_secret = "seungjoo"
+const client_secret = "FRFKRQR9IVahOAfY88oWjNdOUdT8TrvN"
 const domain = "https://o-zoo-back.onrender.com"
 const redirect_uri = `${domain}/redirect`
 const token_uri = "https://kauth.kakao.com/oauth/token"
