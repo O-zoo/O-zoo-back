@@ -90,15 +90,20 @@ app.get("/redirect", async function (req, res) {
 
   // 로그인 완료 후 메인 페이지로 이동
   // res.status(302).redirect(`ozoo://main?login=success`)
-  res.status(302).redirect(`ozoo://main?login=success`)
+  res.status(302).redirect(`ozoo://main?login=success&token=${rtn.access_token}`)
 })
 
 app.get("/profile", async function (req, res) {
+  const auth = req.headers.authorization
+  const token = auth ? auth.split(' ')[1] : null
+  if(!token){
+    return res.status(401).json({ code : -401, msg: "access token missing" })
+  }
   const uri = api_host + "/v2/user/me"  // 사용자 정보 가져오기 API 주소
   const param = {}  // 사용자 정보 요청 시 파라미터는 필요 없음
   const header = {
     "content-type": "application/x-www-form-urlencoded",  // 요청 헤더 Content-Type 지정
-    Authorization: "Bearer " + req.session.key,  // 세션에 저장된 액세스 토큰 전달
+    Authorization: "Bearer " + token,  // 세션에 저장된 액세스 토큰 전달
   }
 
   const rtn = await call("POST", uri, param, header)  // 카카오 API에 요청 전송
