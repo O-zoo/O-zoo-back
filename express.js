@@ -89,7 +89,8 @@ app.get("/redirect", async function (req, res) {
   req.session.key = rtn.access_token
 
   // 로그인 완료 후 메인 페이지로 이동
-  res.status(302).redirect(`ozoo://main?login=success`)
+  // res.status(302).redirect(`ozoo://main?login=success`)
+  res.status(302).redirect(`index.html?login=success`)
 })
 
 app.get("/profile", async function (req, res) {
