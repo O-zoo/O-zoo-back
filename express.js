@@ -141,6 +141,24 @@ app.get("/profile", async function (req, res) {
   res.send(rtn)  // 조회한 사용자 정보를 클라이언트에 반환
 })
 
+app.get("/friends", async function (req, res) {
+  const auth = req.headers.authorization
+  const token = auth ? auth.split(' ')[1] : null
+  if(!token){
+    return res.status(401).json({ code : -401, msg: "access token missing" })
+  }
+  const uri = api_host + "/v1/api/talk/friends"  // 사용자 친구 가져오기 API 주소
+  const param = {}  // 사용자 정보 요청 시 파라미터는 필요 없음
+  const header = {
+    "content-type": "application/x-www-form-urlencoded",  // 요청 헤더 Content-Type 지정
+    Authorization: "Bearer " + token,  // 세션에 저장된 액세스 토큰 전달
+  }
+
+  const rtn = await call("GET", uri, param, header)  // 카카오 API에 요청 전송
+
+  res.send(rtn)  // 조회한 사용자 친구 정보를 클라이언트에 반환
+})
+
 app.get("/logout", async function (req, res) {
   const uri = api_host + "/v1/user/logout"  // 로그아웃 API 주소
   const header = {
@@ -320,7 +338,7 @@ app.post('/api/user/bet/ended', async (req, res) => {
   }
 })
 
-app.post('api/user/getLuck', async (req, res) => {
+app.post('/api/user/getLuck', async (req, res) => {
     const birthday = req.body.birth
     var fullQuestion = "내 생일은 " + birthday + "이야. 내 오늘 내기는 잘 풀릴지 운세를 알려줘. 재물운도 함께 알려줘."
     try {
