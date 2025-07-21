@@ -22,6 +22,11 @@ app.use(
 const cors = require('cors')
 app.use(cors())
 
+const { spawn } = require('child_process')
+
+const User = require('./models/user')
+const Bet = require('./models/bet')
+
 const client_id = "5089e08676bae2c4b65964f001a0fb20"
 const client_secret = "FRFKRQR9IVahOAfY88oWjNdOUdT8TrvN"
 const domain = "https://o-zoo-back.onrender.com"
@@ -50,6 +55,31 @@ async function call(method, uri, param, header) {
   }
   // 요청 성공 또는 실패에 상관없이 응답 데이터 반환
   return rtn.data;
+}
+
+function askGemini(question) {
+  return new Promise((resolve, reject) => {
+    const py = spawn('python', ['./gemini.py', question])
+
+    let result = ''
+    let error = ''
+
+    py.stdout.on('data', (data) => {
+      result += data.toString()
+    })
+
+    py.stderr.on('data', (data) => {
+      error += data.toString()
+    })
+
+    py.on('close', (code) => {
+      if (code === 0) {
+        resolve(result)
+      } else {
+        reject(error || `Python process exited with code ${code}`)
+      }
+    })
+  })
 }
 
 app.get("/authorize", function (req, res) {
@@ -136,6 +166,169 @@ app.get("/unlink", async function (req, res) {
 
 app.get('/', async (req, res) => {
   res.send('Server On')
+})
+
+app.post("/api/user/register", async (req, res) => {
+  try {
+    const user = new User(req.body)
+    await user.save()
+    console.log(user)
+    res.status(200).json({ success: true })
+  } catch (err) {
+    res.json({ success: false, err })
+  }
+})
+
+app.post("/api/bet/register", async (req, res) => {
+  try {
+    const bet = new Bet(req.body)
+    await bet.save()
+    console.log(bet)
+    res.status(200).json({ success: true })
+  } catch (err) {
+    res.json({ success: false, err })
+  }
+})
+
+app.post("/api/user/findById", async (req, res) => {
+  try {
+    const { id } = req.body
+    if (!id) {
+      return res.status(400).json({
+        loginSuccess: false,
+        message: "아이디를 입력하세요.",
+      })
+    }
+
+    const user = await User.findOne({ id });
+    if (!user) {
+      return res.status(401).json({
+        loginSuccess: false,
+        message: "아이디가 존재하지 않습니다.",
+      })
+    }
+    res
+      .status(200)
+      .json({ loginSuccess: true, id: user.id, name: user.name, profile_img: user.profile_img, score: user.score, exp: user.exp, birth: user.birth, wins: user.wins, losses: user.losses })
+  } catch (err) {
+    res.status(500).json({
+      loginSuccess: false,
+      message: "서버 오류가 발생했습니다.",
+      error: err.message,
+    })
+  }
+})
+
+app.post('/api/user/update', async (req, res) => {
+  const id = req.body.id
+  const exp = req.body.exp
+  const score = req.body.score
+  const wins = req.body.wins
+  const losses = req.body.losses
+  if (!id) {
+    return res.status(400).json({ success: false, message: 'ID를 입력하세요.' })
+  }
+  if (exp === undefined || exp === null) {
+    return res.status(400).json({ success: false, message: '경험치를 입력하세요.' })
+  }
+  if (score === undefined || score === null) {
+    return res.status(400).json({ success: false, message: '점수를 입력하세요.' })
+  }
+  if (wins === undefined || wins === null) {
+    return res.status(400).json({ success: false, message: '승리횟수를 입력하세요.' })
+  }
+  if (losses === undefined || losses === null) {
+    return res.status(400).json({ success: false, message: '패배횟수를 입력하세요.' })
+  }
+
+  try {
+    const user = await User.findOne({ id: id })
+    if (!user) {
+      return res.status(404).json({ success: false, message: '등록된 아이디가 없습니다.' })
+    }
+
+    user.exp = exp
+    user.score = score
+    user.wins = wins
+    user.losses = losses
+    await user.save()
+    console.log(user)
+    res.status(200).json({ success: true })
+  } catch (err) {
+    res.json({ success: false, err })
+  }
+})
+
+app.get("/api/top10", async (req, res) => {
+  try {
+    const topPlayers = await User.aggregate([
+      { $sort: { score: -1 } },
+      { $limit: 10 },
+      {
+        $project: {
+          _id: 0,    
+          name: 1,
+          score: 1,
+          profile_img: 1
+        }
+      }
+    ]);
+
+    res.status(200).json({ topPlayers });
+  } catch (err) {
+    console.error('Error fetching top players:', err);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+})
+
+app.post('/api/user/bet/ongoing', async (req, res) => {
+  const id = req.body.id
+  if (!id) {
+    return res.status(400).json({ success: false, message: 'ID를 입력하세요.' })
+  }
+
+  const now = new Date()
+  try {
+    const bets = await Bet.find({
+      'members.id': id,
+      start: { $lte: now },
+      end: { $gte: now },
+    })
+    console.log(bets)
+    res.json(bets)
+  } catch (err) {
+    res.status(500).json({ error : `server error, ${err.message}`})
+  }
+})
+
+app.post('/api/user/bet/ended', async (req, res) => {
+  const id = req.body.id
+  if (!id) {
+    return res.status(400).json({ success: false, message: 'ID를 입력하세요.' })
+  }
+
+  const now = new Date()
+  try {
+    const bets = await Bet.find({
+      'members.id': id,
+      end: { $lte: now },
+    })
+    console.log(bets)
+    res.json(bets)
+  } catch (err) {
+    res.status(500).json({ error : `server error, ${err.message}`})
+  }
+})
+
+app.post('api/user/getLuck', async (req, res) => {
+    const birthday = req.body.birth
+    var fullQuestion = "내 생일은 " + birthday + "이야. 내 오늘 내기는 잘 풀릴지 운세를 알려줘. 재물운도 함께 알려줘."
+    try {
+        const answer = await askGemini(fullQuestion);
+        res.json({answer : answer})
+    } catch (err) {
+        res.json({error : err})
+    }
 })
 
 app.listen(port, () => {
