@@ -117,10 +117,30 @@ app.get("/redirect", async function (req, res) {
 
   // 발급받은 액세스 토큰을 세션에 저장 (로그인 상태 유지 목적)
   req.session.key = rtn.access_token
+  req.session.refreshKey = rtn.refresh_token
 
   // 로그인 완료 후 메인 페이지로 이동
-  // res.status(302).redirect(`ozoo://main?login=success`)
-  res.status(302).redirect(`ozoo://main?login=success&token=${rtn.access_token}`)
+  res.status(302).redirect(`ozoo://main?login=success&token=${rtn.access_token}&refresh=${rtn.refresh_token}`)
+})
+
+app.get("/refresh", async function (req, res) {
+  // 인가 코드 발급 요청에 필요한 파라미터 구성
+  const refreshToken = req.body.refreshToken;
+  const param = qs.stringify({
+    grant_type: "refresh_token",   // 인증 방식 고정값
+    client_id: client_id,               // 내 앱의 REST API 키
+    refresh_token: refreshToken,         // refresh Token
+    client_secret: client_secret,       // 선택: 클라이언트 시크릿(Client Secret) 사용 시 추가
+  })
+
+  // API 요청 헤더 설정
+  const header = { "content-type": "application/x-www-form-urlencoded" }
+
+  // 카카오 인증 서버에 액세스 토큰 요청
+  const rtn = await call("POST", 'https://kauth.kakao.com/oauth/token', param, header)
+  
+  // 로그인 완료 후 메인 페이지로 이동
+  res.json(rtn)
 })
 
 app.get("/profile", async function (req, res) {
@@ -139,24 +159,6 @@ app.get("/profile", async function (req, res) {
   const rtn = await call("POST", uri, param, header)  // 카카오 API에 요청 전송
 
   res.send(rtn)  // 조회한 사용자 정보를 클라이언트에 반환
-})
-
-app.get("/friends", async function (req, res) {
-  const auth = req.headers.authorization
-  const token = auth ? auth.split(' ')[1] : null
-  if(!token){
-    return res.status(401).json({ code : -401, msg: "access token missing" })
-  }
-  const uri = api_host + "/v1/api/talk/friends"  // 사용자 친구 가져오기 API 주소
-  const param = {}  // 사용자 정보 요청 시 파라미터는 필요 없음
-  const header = {
-    "content-type": "application/x-www-form-urlencoded",  // 요청 헤더 Content-Type 지정
-    Authorization: "Bearer " + token,  // 세션에 저장된 액세스 토큰 전달
-  }
-
-  const rtn = await call("GET", uri, param, header)  // 카카오 API에 요청 전송
-
-  res.send(rtn)  // 조회한 사용자 친구 정보를 클라이언트에 반환
 })
 
 app.get("/logout", async function (req, res) {
@@ -297,6 +299,45 @@ app.get("/api/top10", async (req, res) => {
     console.error('Error fetching top players:', err);
     res.status(500).json({ message: 'Internal Server Error' });
   }
+})
+
+app.post("/api/user/friendRankings", async function (req, res) {
+  const auth = req.headers.authorization
+  const token = auth ? auth.split(' ')[1] : null
+  if(!token){
+    return res.status(401).json({ code : -401, msg: "access token missing" })
+  }
+  const uri = api_host + "/v1/api/talk/friends"  // 사용자 친구 가져오기 API 주소
+  const param = {}  // 사용자 정보 요청 시 파라미터는 필요 없음
+  const header = {
+    "content-type": "application/x-www-form-urlencoded",  // 요청 헤더 Content-Type 지정
+    Authorization: "Bearer " + token,  // 세션에 저장된 액세스 토큰 전달
+  }
+
+  const rtn = await call("GET", uri, param, header)  // 카카오 API에 요청 전송
+
+  const friends = rtn.data.elements.map(friend => String(friend.id))
+
+  if (friends.length === 0) {
+    return res.status(200).json({success: true, message: '앱에 가입한 카카오톡 친구가 없습니다.', rankings: []})
+  }
+
+  const friendsIn = await User.find({id: {$in: friends}})
+
+  const rankedUsers = friendsIn
+    .sort((a, b) => b.score - a.score)
+    .map((user, index) => ({
+      rank: index + 1,
+      name: user.name,
+      profile_img: user.profile_img,
+      score: user.score,
+    }));
+  
+  return res.status(200).json({
+    success: true,
+    count: rankedUsers.length,
+    rankings: rankedUsers
+  })
 })
 
 app.post('/api/user/bet/ongoing', async (req, res) => {
