@@ -121,7 +121,7 @@ app.get("/redirect", async function (req, res) {
   console.log(`redirection access token : ${rtn.access_token}, refresh token : ${rtn.refresh_token}`)
 
   // 로그인 완료 후 메인 페이지로 이동
-  res.status(302).redirect(`ozoo://main?login=success&token=${rtn.access_token}&refresh=${rtn.refresh_token}`)
+  res.status(302).redirect(`ozoo://main?login=success&token=${rtn.access_token}&refresh=${rtn.refresh_token}&expires_in=${rtn.expires_in}`)
 })
 
 app.get("/refresh", async function (req, res) {
