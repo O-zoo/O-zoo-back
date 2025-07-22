@@ -288,7 +288,7 @@ app.post('/api/user/update', async (req, res) => {
 
 app.get("/api/top10", async (req, res) => {
   try {
-    const topPlayers = await User.aggregate([
+    const topPlayersRaw = await User.aggregate([
       { $sort: { score: -1 } },
       { $limit: 10 },
       {
@@ -296,10 +296,14 @@ app.get("/api/top10", async (req, res) => {
           _id: 0,    
           name: 1,
           score: 1,
-          profile_img: 1
         }
       }
     ]);
+
+    const topPlayers = topPlayersRaw.map((player, index) => ({
+      ...player,
+      rank: index+1,
+    }));
 
     res.status(200).json({ topPlayers });
   } catch (err) {
@@ -336,7 +340,6 @@ app.post("/api/user/friendRankings", async function (req, res) {
     .map((user, index) => ({
       rank: index + 1,
       name: user.name,
-      profile_img: user.profile_img,
       score: user.score,
     }));
   
