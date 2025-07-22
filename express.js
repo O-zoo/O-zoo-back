@@ -118,6 +118,7 @@ app.get("/redirect", async function (req, res) {
   // 발급받은 액세스 토큰을 세션에 저장 (로그인 상태 유지 목적)
   req.session.key = rtn.access_token
   req.session.refreshKey = rtn.refresh_token
+  console.log(`redirection access token : ${rtn.access_token}, refresh token : ${rtn.refresh_token}`)
 
   // 로그인 완료 후 메인 페이지로 이동
   res.status(302).redirect(`ozoo://main?login=success&token=${rtn.access_token}&refresh=${rtn.refresh_token}`)
@@ -138,7 +139,8 @@ app.get("/refresh", async function (req, res) {
 
   // 카카오 인증 서버에 액세스 토큰 요청
   const rtn = await call("POST", 'https://kauth.kakao.com/oauth/token', param, header)
-  
+  console.log(`refresh, ${rtn}`)
+
   // 로그인 완료 후 메인 페이지로 이동
   res.json(rtn)
 })
