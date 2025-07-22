@@ -326,6 +326,7 @@ app.post("/api/user/friendRankings", async function (req, res) {
   }
 
   const rtn = await call("GET", uri, param, header)  // 카카오 API에 요청 전송
+  console.log(rtn)
 
   const friends = rtn.data.elements.map(friend => String(friend.id))
 
