@@ -305,7 +305,7 @@ app.get("/api/top10", async (req, res) => {
       rank: index+1,
     }));
 
-    res.status(200).json({ topPlayers });
+    res.status(200).json({ top10: topPlayers });
   } catch (err) {
     console.error('Error fetching top players:', err);
     res.status(500).json({ message: 'Internal Server Error' });
