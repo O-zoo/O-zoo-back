@@ -190,6 +190,11 @@ app.get('/', async (req, res) => {
   res.send('Server On')
 })
 
+app.get('/deleteUser', async (req, res) => {
+  await User.deleteMany({})
+  res.send('Deleted all users')
+})
+
 app.post("/api/user/register", async (req, res) => {
   try {
     const user = new User(req.body)
