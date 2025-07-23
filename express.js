@@ -519,8 +519,9 @@ app.post('/api/user/bet/ended', async (req, res) => {
     const formattedBets = bets.map((bet, index) => {
       const winnerId = bet.winner?.id; // optional chaining
       const isWinner = (winnerId === id);
+      const notOver = bet.loser.length === 0;
       let userStatus = 'over';
-      if(!winnerId) {
+      if(notOver) {
         userStatus = 'over';
       }
       else {
