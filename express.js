@@ -482,7 +482,12 @@ app.post('/api/user/bet/ongoing', async (req, res) => {
       status: 'ongoing',
       name: bet.title,
       date: bet.start.toISOString().split('T')[0],
-      members: bet.members.map(member => (member.name))
+      members: bet.members.map(member => (member.name)),
+      price_url: bet.price,
+      price_name: bet.price_name,
+      content: bet.content,
+      start: bet.start.toISOString(),
+      end: bet.end.toISOString(),
     }))
     res.json(formattedBets)
   } catch (err) {
