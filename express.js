@@ -346,9 +346,9 @@ app.post("/api/user/friendRankings", async function (req, res) {
 
   const friends = rtn.elements.map(friend => String(friend.id))
 
-  if (friends.length === 0) {
-    return res.status(200).json({success: true, message: '앱에 가입한 카카오톡 친구가 없습니다.', rankings: []})
-  }
+  // if (friends.length === 0) {
+  //   return res.status(200).json({success: true, message: '앱에 가입한 카카오톡 친구가 없습니다.', rankings: []})
+  // }
 
   const friendsIn = await User.find({id: {$in: friends}})
   const me = await User.findOne({id: id})
@@ -386,7 +386,14 @@ app.post('/api/user/bet/ongoing', async (req, res) => {
       end: { $gte: now },
     })
     console.log(bets)
-    res.json(bets)
+    const formattedBets = bets.map(bet, index => ({
+      id: index + 1, 
+      status: 'ongoing',
+      name: bet.title,
+      date: bet.start.toISOString().split('T')[0],
+      members: bet.members.map(member => (member.name))
+    }))
+    res.json(formattedBets)
   } catch (err) {
     res.status(500).json({ error : `server error, ${err.message}`})
   }
