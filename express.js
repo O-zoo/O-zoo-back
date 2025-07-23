@@ -508,9 +508,9 @@ app.post('/api/user/bet/ended', async (req, res) => {
       end: { $lte: now },
     })
     console.log(bets)
-    res.json(bets)
+    res.json({success: true, bets: bets})
   } catch (err) {
-    res.status(500).json({ error : `server error, ${err.message}`})
+    res.status(500).json({ success: false, error : `server error, ${err.message}`})
   }
 })
 
