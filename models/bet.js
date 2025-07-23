@@ -32,7 +32,14 @@ const betSchema = new mongoose.Schema({
     type: String,
   },
   winner: {
-    type: {String, String},
+    type: {
+      id: {
+        type: String,
+      },
+      name: {
+        type: String,
+      }
+    },
   },
   loser: {
     type: [

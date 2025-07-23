@@ -378,7 +378,7 @@ app.post('/api/bet/update', async (req, res) => {
       return res.status(404).json({ success: false, message: '등록된 내기가 없습니다.' })
     }
     const winnerUser = await User.findOne({ name:winner })
-    const loserUsers = await User.find({ name: { $in: loser.map(l => l.name) } })
+    const loserUsers = await User.find({ name: { $in: loser } })
 
     bet.winner = { id: winnerUser.id, name: winnerUser.name }
     bet.loser = loserUsers.map(loserUser => ({ id: loserUser.id, name: loserUser.name }))
