@@ -296,6 +296,7 @@ app.get("/api/top10", async (req, res) => {
           _id: 0,    
           name: 1,
           score: 1,
+          profile_img: 1,
         }
       }
     ]);
@@ -328,6 +329,12 @@ app.post("/api/user/friendRankings", async function (req, res) {
   const rtn = await call("GET", uri, param, header)  // 카카오 API에 요청 전송
   console.log(rtn)
   console.log(rtn.elements)
+
+  if (!rtn || !Array.isArray(rtn.elements)) {
+    console.error('카카오 API 응답이 올바르지 않습니다:', rtn);
+    return res.status(500).json({ success: false, message: '카카오 API 응답 오류', data: rtn });
+  }
+
 
   const friends = rtn.elements.map(friend => String(friend.id))
 
