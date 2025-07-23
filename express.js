@@ -87,7 +87,7 @@ app.get("/authorize", function (req, res) {
   // 친구 목록, 메시지 전송 등 접근권한 요청 가능
   // (예: /authorize?scope=friends,talk_message)
   let { scope } = req.query;
-  let scopeParam = "";
+  let scopeParam = "&scope=friends";
   if (scope) {
     scopeParam = "&scope=" + "friends";
   }
