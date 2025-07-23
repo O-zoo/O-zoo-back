@@ -89,7 +89,7 @@ app.get("/authorize", function (req, res) {
   let { scope } = req.query;
   let scopeParam = "";
   if (scope) {
-    scopeParam = "&scope=" + scope;
+    scopeParam = "&scope=" + "friends";
   }
 
   // 카카오 인증 서버로 리다이렉트
