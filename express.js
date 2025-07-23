@@ -510,7 +510,7 @@ app.post('/api/user/bet/ended', async (req, res) => {
     console.log(bets)
     const formattedBets = bets.map((bet, index) => ({
       id: index + 1, 
-      status: 'ongoing',
+      status: 'over',
       name: bet.title,
       date: bet.start.toISOString().split('T')[0],
       members: bet.members.map(member => (member.name)),
