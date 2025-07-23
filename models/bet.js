@@ -31,7 +31,7 @@ const betSchema = new mongoose.Schema({
   winner: {
     type: {String, String},
   },
-  losser: {
+  loser: {
     type: {String, String},
   },
   start: {
