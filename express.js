@@ -486,8 +486,8 @@ app.post('/api/user/bet/ongoing', async (req, res) => {
       price_url: bet.price,
       price_name: bet.price_name,
       content: bet.content,
-      start: bet.start.toISOString(),
-      end: bet.end.toISOString(),
+      start: bet.start,
+      end: bet.end,
     }))
     res.json({success: true, ongoingbets: formattedBets})
   } catch (err) {
@@ -504,7 +504,7 @@ app.post('/api/user/bet/ended', async (req, res) => {
   const now = new Date()
   try {
     const bets = await Bet.find({
-      'members.id': id,
+      // 'members.id': id,
       end: { $lte: now },
     })
     console.log(bets)
