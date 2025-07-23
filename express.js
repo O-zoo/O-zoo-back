@@ -253,6 +253,35 @@ app.post("/api/user/findById", async (req, res) => {
   }
 })
 
+app.post("/api/bet/findByContent", async (req, res) => {
+  try {
+    const { content } = req.body
+    if (!content) {
+      return res.status(400).json({
+        success: false,
+        message: "내기를 입력하세요.",
+      })
+    }
+
+    const bet = await Bet.findOne({ content });
+    if (!bet) {
+      return res.status(401).json({
+        success: false,
+        message: "내기가 존재하지 않습니다.",
+      })
+    }
+    res
+      .status(200)
+      .json({ success: true, title: bet.title, content: bet.content, members: bet.members, price: bet.price, winner: bet.winner, loser: bet.loser, start: bet.start, end: bet.end })
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      message: "서버 오류가 발생했습니다.",
+      error: err.message,
+    })
+  }
+})
+
 app.post('/api/user/update', async (req, res) => {
   const id = req.body.id
   const exp = req.body.exp
