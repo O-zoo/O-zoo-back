@@ -90,9 +90,9 @@ app.get("/authorize", function (req, res) {
   // 친구 목록, 메시지 전송 등 접근권한 요청 가능
   // (예: /authorize?scope=friends,talk_message)
   let { scope } = req.query;
-  let scopeParam = "&scope=friends";
+  let scopeParam = "&scope=profile_nickname,profile_image,friends";
   if (scope) {
-    scopeParam = "&scope=" + "profile_nickname, profile_image, friends";
+    scopeParam = "&scope=" + "profile_nickname,profile_image,friends";
   }
 
   // 카카오 인증 서버로 리다이렉트
