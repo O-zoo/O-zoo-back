@@ -257,6 +257,7 @@ app.post("/api/bet/register", async (req, res) => {
     console.log(bet)
     res.status(200).json({ success: true })
   } catch (err) {
+    console.error('Bet registration error:', err)
     res.json({ success: false, err })
   }
 })
