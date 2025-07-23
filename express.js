@@ -310,7 +310,7 @@ app.post("/api/bet/findByContent", async (req, res) => {
     }
     res
       .status(200)
-      .json({ success: true, title: bet.title, content: bet.content, members: bet.members, price: bet.price, winner: bet.winner, loser: bet.loser, start: bet.start, end: bet.end })
+      .json({ success: true, title: bet.title, content: bet.content, members: bet.members, price: bet.price, priceName:bet.price_name, winner: bet.winner, loser: bet.loser, start: bet.start, end: bet.end })
   } catch (err) {
     res.status(500).json({
       success: false,
@@ -439,10 +439,6 @@ app.post("/api/user/friendRankings", async function (req, res) {
 
 
   const friends = rtn.elements.map(friend => String(friend.id))
-
-  // if (friends.length === 0) {
-  //   return res.status(200).json({success: true, message: '앱에 가입한 카카오톡 친구가 없습니다.', rankings: []})
-  // }
 
   const friendsIn = await User.find({id: {$in: friends}})
   const me = await User.findOne({id: id})

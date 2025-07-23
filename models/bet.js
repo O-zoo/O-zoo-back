@@ -28,6 +28,9 @@ const betSchema = new mongoose.Schema({
   price: {
     type: String,
   },
+  price_name: {
+    type: String,
+  },
   winner: {
     type: {String, String},
   },
