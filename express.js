@@ -315,6 +315,7 @@ app.get("/api/top10", async (req, res) => {
 
 app.post("/api/user/friendRankings", async function (req, res) {
   const auth = req.headers.authorization
+  const id = req.body.id
   const token = auth ? auth.split(' ')[1] : null
   if(!token){
     return res.status(401).json({ code : -401, msg: "access token missing" })
@@ -343,6 +344,10 @@ app.post("/api/user/friendRankings", async function (req, res) {
   }
 
   const friendsIn = await User.find({id: {$in: friends}})
+  const me = await User.findOne({id: id})
+  if (me) {
+    friendsIn.push(me)
+  }
 
   const rankedUsers = friendsIn
     .sort((a, b) => b.score - a.score)
