@@ -472,7 +472,7 @@ app.post('/api/user/bet/ongoing', async (req, res) => {
   const now = new Date()
   try {
     const bets = await Bet.find({
-      'members.id': id,
+      // 'members.id': id,
       start: { $lte: now },
       end: { $gte: now },
     })
