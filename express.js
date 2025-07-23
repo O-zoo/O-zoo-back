@@ -244,7 +244,7 @@ app.post("/api/user/register", async (req, res) => {
 })
 
 app.post("/api/bet/register", async (req, res) => {
-  if (!req.body.title || !req.body.content || !req.body.members || !req.body.start || !req.body.end) {
+  if (!req.body.title || !req.body.content || !req.body.members || !req.body.end) {
     return res.status(400).json({ success: false, message: '필수 항목이 누락되었습니다.' })
   }
   const members = req.body.members
