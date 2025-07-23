@@ -207,6 +207,13 @@ app.post("/api/user/register", async (req, res) => {
 })
 
 app.post("/api/bet/register", async (req, res) => {
+  if (!req.body.title || !req.body.content || !req.body.members || !req.body.start || !req.body.end) {
+    return res.status(400).json({ success: false, message: '필수 항목이 누락되었습니다.' })
+  }
+  const members = req.body.members
+  const membersIn = await User.find({name: {$in: members}})
+  const memberIds = membersIn.map(member => ({ id: member.id, name: member.name }))
+  req.body.members = memberIds
   try {
     const bet = new Bet(req.body)
     await bet.save()
@@ -348,6 +355,7 @@ app.post("/api/user/friendRankings", async function (req, res) {
   if (me) {
     friendsIn.push(me)
   }
+  console.log(`pushed me:${friendsIn}`)
 
   const rankedUsers = friendsIn
     .sort((a, b) => b.score - a.score)
