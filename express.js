@@ -489,9 +489,9 @@ app.post('/api/user/bet/ongoing', async (req, res) => {
       start: bet.start.toISOString(),
       end: bet.end.toISOString(),
     }))
-    res.json(formattedBets)
+    res.json({success: true, ongoingbets: formattedBets})
   } catch (err) {
-    res.status(500).json({ error : `server error, ${err.message}`})
+    res.status(500).json({ success: false, error : `server error, ${err.message}`})
   }
 })
 
