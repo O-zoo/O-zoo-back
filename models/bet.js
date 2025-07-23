@@ -21,6 +21,9 @@ const betSchema = new mongoose.Schema({
         name: {
           type: String,
           required: true
+        },
+        profile_img: {
+          type: String,
         }
       }
     ]

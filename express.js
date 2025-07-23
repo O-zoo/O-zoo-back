@@ -249,7 +249,7 @@ app.post("/api/bet/register", async (req, res) => {
   }
   const members = req.body.members
   const membersIn = await User.find({name: {$in: members}})
-  const memberIds = membersIn.map(member => ({ id: member.id, name: member.name }))
+  const memberIds = membersIn.map(member => ({ id: member.id, name: member.name, profile_img: member.profile_img }))
   req.body.members = memberIds
   try {
     const bet = new Bet(req.body)
