@@ -516,20 +516,32 @@ app.post('/api/user/bet/ended', async (req, res) => {
       end: { $lte: now },
     })
     console.log(bets)
-    const formattedBets = bets.map((bet, index) => ({
-      id: index + 1, 
-      status: 'over',
-      name: bet.title,
-      date: bet.start.toISOString().split('T')[0],
-      members: bet.members.map(member => (member.name)),
-      price_url: bet.price,
-      price_name: bet.price_name,
-      content: bet.content,
-      start: bet.start,
-      end: bet.end,
-      winner: bet.winner,
-      loser: bet.loser,
-    }))
+    const formattedBets = bets.map((bet, index) => {
+      const winnerId = bet.winner?.id; // optional chaining
+      const isWinner = winnerId === id;
+      let userStatus = 'over';
+      if(winnerId === null) {
+        userStatus = 'over';
+      }
+      else {
+        userStatus = isWinner ? 'win' : 'lose';
+      }
+
+      return {
+        id: index + 1,
+        status: userStatus,
+        name: bet.title,
+        date: bet.start.toISOString().split('T')[0],
+        members: bet.members.map((m) => m.name),
+        price_url: bet.price,
+        price_name: bet.price_name,
+        content: bet.content,
+        start: bet.start,
+        end: bet.end,
+        winner: bet.winner,
+        loser: bet.loser,
+      };
+    });
     res.json({success: true, bets: formattedBets})
   } catch (err) {
     res.status(500).json({ success: false, error : `server error, ${err.message}`})
