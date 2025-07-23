@@ -380,8 +380,8 @@ app.post('/api/bet/update', async (req, res) => {
     const winnerUser = await User.findOne({ name:winner })
     const loserUsers = await User.find({ name: { $in: loser.map(l => l.name) } })
 
-    bet.winner = winnerUser ? { id: winnerUser.id, name: winnerUser.name } : { id: null, name: winner }
-    bet.loser = loserUsers
+    bet.winner = { id: winnerUser.id, name: winnerUser.name }
+    bet.loser = loserUsers.map(loserUser => ({ id: loserUser.id, name: loserUser.name }))
     // if(members) {
     //   const membersIn = await User.find({name: {$in: members}})
     //   const memberIds = membersIn.map(member => ({ id: member.id, name: member.name }))
