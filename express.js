@@ -293,6 +293,33 @@ app.post('/api/user/update', async (req, res) => {
   }
 })
 
+app.post('/api/bet/update', async (req, res) => {
+  const content = req.body.content
+  const winner = req.body.winner
+  const loser = req.body.loser
+  if (!content) {
+    return res.status(400).json({ success: false, message: '내기 내용을 입력하세요.' })
+  }
+  if (!winner || !loser) {
+    return res.status(400).json({ success: false, message: '승자와 패자를 입력하세요.' })
+  }
+
+  try {
+    const bet = await Bet.findOne({ content: content })
+    if (!bet) {
+      return res.status(404).json({ success: false, message: '등록된 내기가 없습니다.' })
+    }
+
+    bet.winner = winner
+    bet.loser = loser
+    await bet.save()
+    console.log(bet)
+    res.status(200).json({ success: true })
+  } catch (err) {
+    res.json({ success: false, err })
+  }
+})
+
 app.get("/api/top10", async (req, res) => {
   try {
     const topPlayersRaw = await User.aggregate([
@@ -363,6 +390,7 @@ app.post("/api/user/friendRankings", async function (req, res) {
       rank: index + 1,
       name: user.name,
       score: user.score,
+      profile_img: user.profile_img  
     }));
   
   return res.status(200).json({
