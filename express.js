@@ -34,6 +34,9 @@ const redirect_uri = `${domain}/redirect`
 const token_uri = "https://kauth.kakao.com/oauth/token"
 const api_host = "https://kapi.kakao.com"
 
+const naver_client_id = "SW7l8ODtkdq9XuOJfXXg"
+const naver_client_secret = "eYFxNIrcJ4"
+
 const mongoose = require('mongoose')
 const url = process.env.MONGODB_URL
 
@@ -189,6 +192,40 @@ app.get("/unlink", async function (req, res) {
 app.get('/', async (req, res) => {
   res.send('Server On')
 })
+
+app.post('/search/naver/product', async (req, res) => {
+  try {
+    const keyword = req.body.keyword || '잔망루피';  // 검색어 없을 때 기본값
+    const api_url = `https://openapi.naver.com/v1/search/shop.json?query=${encodeURIComponent(keyword)}&display=5`;
+
+    const response = await axios.get(api_url, {
+      headers: {
+        'X-Naver-Client-Id': naver_client_id,
+        'X-Naver-Client-Secret': naver_client_secret
+      }
+    });
+
+    const data = response.data;
+    const products = data.items.map(item => ({
+      title: item.title.replace(/<[^>]+>/g, ''), // HTML 태그 제거
+      image: item.image,
+      link: item.link
+    }));
+
+    res.json({
+      success: true,
+      product_image:products[0].image
+    });
+
+  } catch (error) {
+    console.error('API 에러:', error.message);
+    res.status(500).json({
+      success: false,
+      message: '네이버 쇼핑 API 요청 실패',
+      error: error.response ? error.response.data : error.message
+    });
+  }
+});
 
 app.get('/deleteUser', async (req, res) => {
   await User.deleteMany({})
@@ -443,7 +480,7 @@ app.post('/api/user/bet/ongoing', async (req, res) => {
       end: { $gte: now },
     })
     console.log(bets)
-    const formattedBets = bets.map(bet, index => ({
+    const formattedBets = bets.map((bet, index) => ({
       id: index + 1, 
       status: 'ongoing',
       name: bet.title,
