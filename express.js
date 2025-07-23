@@ -327,8 +327,9 @@ app.post("/api/user/friendRankings", async function (req, res) {
 
   const rtn = await call("GET", uri, param, header)  // 카카오 API에 요청 전송
   console.log(rtn)
+  console.log(rtn.elements)
 
-  const friends = rtn.data.elements.map(friend => String(friend.id))
+  const friends = rtn.elements.map(friend => String(friend.id))
 
   if (friends.length === 0) {
     return res.status(200).json({success: true, message: '앱에 가입한 카카오톡 친구가 없습니다.', rankings: []})
