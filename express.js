@@ -364,6 +364,7 @@ app.post('/api/bet/update', async (req, res) => {
   const content = req.body.content
   const winner = req.body.winner
   const loser = req.body.loser
+  // const members = req.body.members
   if (!content) {
     return res.status(400).json({ success: false, message: '내기 내용을 입력하세요.' })
   }
@@ -376,9 +377,16 @@ app.post('/api/bet/update', async (req, res) => {
     if (!bet) {
       return res.status(404).json({ success: false, message: '등록된 내기가 없습니다.' })
     }
+    const winnerUser = await User.findOne({ name:winner })
+    const loserUsers = await User.find({ name: { $in: loser.map(l => l.name) } })
 
-    bet.winner = winner
-    bet.loser = loser
+    bet.winner = winnerUser ? { id: winnerUser.id, name: winnerUser.name } : { id: null, name: winner }
+    bet.loser = loserUsers
+    // if(members) {
+    //   const membersIn = await User.find({name: {$in: members}})
+    //   const memberIds = membersIn.map(member => ({ id: member.id, name: member.name }))
+    //   bet.members = memberIds 
+    // }
     await bet.save()
     console.log(bet)
     res.status(200).json({ success: true })
