@@ -395,6 +395,31 @@ app.post('/api/bet/update', async (req, res) => {
   }
 })
 
+app.post('/api/bet/updateByHand', async (req, res) => {
+  const content = req.body.content
+  const members = req.body.members
+  if (!content) {
+    return res.status(400).json({ success: false, message: '내기 내용을 입력하세요.' })
+  }
+
+  try {
+    const bet = await Bet.findOne({ content: content })
+    if (!bet) {
+      return res.status(404).json({ success: false, message: '등록된 내기가 없습니다.' })
+    }
+    if(members) {
+      const membersIn = await User.find({name: {$in: members}})
+      const memberIds = membersIn.map(member => ({ id: member.id, name: member.name, profile_img: member.profile_img }))
+      bet.members = memberIds 
+    }
+    await bet.save()
+    console.log(bet)
+    res.status(200).json({ success: true })
+  } catch (err) {
+    res.json({ success: false, err })
+  }
+})
+
 app.get("/api/top10", async (req, res) => {
   try {
     const topPlayersRaw = await User.aggregate([
@@ -490,7 +515,7 @@ app.post('/api/user/bet/ongoing', async (req, res) => {
       status: 'ongoing',
       name: bet.title,
       date: bet.start.toISOString().split('T')[0],
-      members: bet.members.map(member => (member.name)),
+    members: bet.members.map(member => ({name: member.name, profile_img: member.profile_img})),
       price_url: bet.price,
       price_name: bet.price_name,
       content: bet.content,
@@ -533,7 +558,7 @@ app.post('/api/user/bet/ended', async (req, res) => {
         status: userStatus,
         name: bet.title,
         date: bet.start.toISOString().split('T')[0],
-        members: bet.members.map((m) => m.name),
+        members: bet.members.map((m) => ({name: m.name, profile_img: m.profile_img})),
         price_url: bet.price,
         price_name: bet.price_name,
         content: bet.content,
